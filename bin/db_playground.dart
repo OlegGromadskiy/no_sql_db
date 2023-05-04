@@ -2,13 +2,13 @@ import 'container.dart';
 import 'data_base.dart';
 
 void main() async {
-  final db = await DataBase.init();
+  final db = await DataBase.init(showDebugPrints: false);
 
   final container = db.container<List<dynamic>>();
-  await container.put([1000000, 'dddd', 1, 'ggg', false]);
+  await container.put([1000000, 'dddd', 1, 'ggg', false, 1488]);
 
-  final list = await container.get();
+  final lazy = container.getLazy();
 
-  print(list);
+  print(lazy.last);
 }
 

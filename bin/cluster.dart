@@ -57,7 +57,7 @@ class ClusterManager {
     //print('Used clusters ${clusters.length}');
   }
 
-  Iterable<Cluster> typedClusters<T>() {
+  Iterable<Cluster<T>> typedClusters<T>() {
     return _clusters.whereType<Cluster<T>>();
   }
 
@@ -82,7 +82,7 @@ class Cluster<T> {
   Cluster({
     required this.begin,
     required RandomAccessFile file,
-    this.size = 1024,
+    this.size = 1,
   }) : _file = file;
 
   void reset() {
@@ -100,6 +100,26 @@ class Cluster<T> {
     return buffer;
   }
 
+  Uint8List readFromTo(int from, int to) {
+    _file.setPositionSync(from);
+
+    return _file.readSync(to - from);
+  }
+
+  int readByteFromTo(int from, int to) {
+    _file.setPositionSync(from);
+
+    return _file.readSync(1).first;
+  }
+
+  bool tryReadByteFromTo(int from, int to) {
+    _file.setPositionSync(from);
+
+    final result = _file.readSync(1);
+
+    return result.isNotEmpty;
+  }
+
   bool write(int byte) {
     if (_offset + 1 > size) {
       return false;
@@ -111,6 +131,4 @@ class Cluster<T> {
 
     return true;
   }
-
-  int get availableSize => size - _offset;
 }

@@ -17,9 +17,9 @@ class BinaryCodec {
       return BaseTypesTags.string.tag;
     } else if (object is List) {
       return BaseTypesTags.list.tag;
-    } else if(object is bool){
+    } else if (object is bool) {
       return BaseTypesTags.bool.tag;
-    }else if (object is BinaryConverter) {
+    } else if (object is BinaryConverter) {
       return object.tag;
     } else {
       throw 'Type [${object.runtimeType}] no registered';
@@ -32,9 +32,11 @@ class BinaryCodec {
       tagByType: tagByType,
     );
 
-    writer.write(object);
+    return writer.write(object);
+  }
 
-    return writer.collect();
+  int decodeInt (Uint8List bytes) {
+    return ByteData.sublistView(bytes).getInt64(0);
   }
 
   T decodeBytes<T>(Uint8List bytes) {

@@ -4,11 +4,8 @@ import 'package:test/test.dart';
 Future<void> main() async {
   late DataBase db;
 
-  setUpAll(() async {
-    db = await DataBase.init();
-  });
-
   test('bool test', () async {
+    db = await DataBase.init();
     final container = db.container<bool>();
 
     await container.put(false);
@@ -19,6 +16,7 @@ Future<void> main() async {
   });
 
   test('int test', () async {
+    db = await DataBase.init();
     final container = db.container<int>();
 
     await container.put(10);
@@ -53,6 +51,7 @@ Future<void> main() async {
   });
 
   test('list test', () async {
+    db = await DataBase.init(showDebugPrints: false);
     final container = db.container<List<dynamic>>();
     await container.put([1000000, 'dddd', 1, 'ggg', false]);
 

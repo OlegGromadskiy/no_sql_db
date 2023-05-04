@@ -7,7 +7,6 @@ import 'converters/converter.dart';
 class BinaryWriter {
   final Encoders _encoders;
   final TagByType _tagByType;
-  final BytesBuilder _builder = BytesBuilder();
 
   BinaryWriter({
     required Encoders encoders,
@@ -15,78 +14,76 @@ class BinaryWriter {
   })  : _encoders = encoders,
         _tagByType = tagByType;
 
-  Uint8List look() {
-    return _builder.toBytes();
-  }
-
-  void write<T>(T object) {
+  Uint8List write<T>(T object) {
     final tag = _tagByType(object);
-    _writeTag(tag);
+    final builder = BytesBuilder();
+
+    builder.add(_writeTag(tag));
 
     final type = object.runtimeType;
 
     if (type == BinaryConverter) {
-       _encoders[tag]!.encode(object, this);
-    } else if(type == int){
-       _writeInt(object as int);
-    } else if(type == String){
-       _writeString(object as String);
-    } else if(type == double) {
-       _writeDouble(object as double);
-    }else if(type == List){
-      _writeList(object as List);
-    } else if(type == bool){
-      _writeBool(object as bool);
+      builder.add(_encoders[tag]!.encode(object, this));
+    } else if (type == int) {
+      builder.add(_writeInt(object as int));
+    } else if (type == String) {
+      builder.add(_writeString(object as String));
+    } else if (type == double) {
+      builder.add(_writeDouble(object as double));
+    } else if (type == List) {
+      builder.add(_writeList(object as List));
+    } else if (type == bool) {
+      builder.add(_writeBool(object as bool));
     } else {
       throw 'Unsupported type ${object.runtimeType}';
     }
+
+    return builder.takeBytes();
   }
 
-  void _writeTag(int tag) {
-    _writeInt(tag);
+  Uint8List _writeTag(int tag) {
+    return _writeInt(tag);
   }
 
-  void _writeString(String str){
-    _writeInt(str.length);
+  Uint8List _writeString(String str) {
+    final builder = BytesBuilder();
 
-    _writeAll(Uint8List.fromList(utf8.encode(str)));
+    builder.add(_writeInt(str.length));
+
+    builder.add(utf8.encode(str));
+
+    return builder.toBytes();
   }
 
-  void _writeForList(){
+  Uint8List _writeList(List list) {
+    final builder = BytesBuilder();
 
-  }
-
-  void _writeList(List list){
-    _writeInt(list.length);
+    builder.add(_writeInt(list.length));
 
     for (final value in list) {
-      write(value);
+      final bytes = write(value);
+      builder.add(_writeInt(bytes.length));
+      builder.add(bytes);
     }
+
+    return builder.toBytes();
   }
 
-  void _writeInt(int object) {
+  Uint8List _writeInt(int object) {
     final bytes = ByteData(8)..setInt64(0, object);
 
-    _builder.add(bytes.buffer.asUint8List());
+    return bytes.buffer.asUint8List();
   }
 
-  void _writeDouble(double object) {
+  Uint8List _writeDouble(double object) {
     final bytes = ByteData(8)..setFloat64(0, object);
 
-    _builder.add(bytes.buffer.asUint8List());
+    return bytes.buffer.asUint8List();
   }
 
-  void _writeBool(bool object) {
+  Uint8List _writeBool(bool object) {
     final bytes = ByteData(1)..setUint8(0, object ? 1 : 0);
 
-    _builder.add(bytes.buffer.asUint8List());
-  }
-
-  void _writeAll(Uint8List bytes) {
-    _builder.add(bytes);
-  }
-
-  Uint8List collect() {
-    return _builder.toBytes();
+    return bytes.buffer.asUint8List();
   }
 }

@@ -1,5 +1,6 @@
 import 'binary_codec.dart';
 import 'cluster.dart';
+import 'lazy/lazy_list.dart';
 
 class Container<T> {
   final bool _showDebugPrints;
@@ -36,9 +37,7 @@ class Container<T> {
 }
 
 extension ListContainer<T> on Container<List<T>> {
-  Future<List<T>> getLazy() async {
-    final clusters = manager.typedClusters<List<T>>();
-
-    return await get();
+  LazyList<T> getLazy() {
+    return LazyList<T>(manager.typedClusters<List<T>>());
   }
 }

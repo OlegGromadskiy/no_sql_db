@@ -36,7 +36,7 @@ class BinaryReader {
     } else if (_decoders.containsKey(tag.tag)){
       return _decoders[tag]!.decode(this);
     } else {
-      throw 'Unsupported type $T';
+      throw 'Unsupported type $tag';
     }
   }
 
@@ -56,6 +56,7 @@ class BinaryReader {
     final buffer = [];
 
     for(int i = 0; i < length; i++){
+      _readInt();
       buffer.add(read());
     }
 
