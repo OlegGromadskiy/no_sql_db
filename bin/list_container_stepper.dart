@@ -1,32 +1,29 @@
 import 'binary_codec.dart';
-import 'cluster.dart';
+import 'clusters_single_view.dart';
 import 'lazy/lazy_list.dart';
 
 class ListContainerStepper<T> {
-  final Iterable<Cluster> _clusters;
+  final ClustersSingleView<T> clustersView;
 
-  late int offset = start + 16;
-  late int start = currentCluster.begin;
-  late Cluster currentCluster = _clusters.first;
+  final start = 0;
+  final lengthStart = 8;
+  final firstItemSizeStart = 16;
+
+  late int offset = firstItemSizeStart;
 
   bool isFirstMove = true;
 
-  ListContainerStepper(Clusters<T> iterable) : _clusters = iterable;
+  ListContainerStepper(Clusters<T> iterable) : clustersView = ClustersSingleView(iterable);
 
-  int get length {
-    return binaryCodec.decodeInt(currentCluster.readFromTo(start + 8, start + 16));
-  }
+  int get length => binaryCodec.decodeInt(clustersView.read(lengthStart, 8));
 
   T get current {
     var tempOffset = offset;
 
+    final size = binaryCodec.decodeInt(clustersView.read(tempOffset, 8));
+    tempOffset+=8;
 
-    for(int i = 0; i < 8; i++){
-
-    }
-    final size = binaryCodec.decodeInt(currentCluster.readFromTo(tempOffset, tempOffset += 8));
-
-    return binaryCodec.decodeBytes<T>(currentCluster.readFromTo(tempOffset, tempOffset += size));
+    return binaryCodec.decodeBytes<T>(clustersView.read(tempOffset, size));
   }
 
   bool moveNext() {
@@ -35,13 +32,9 @@ class ListContainerStepper<T> {
       return true;
     }
 
-    final size = binaryCodec.decodeInt(currentCluster.readFromTo(offset, offset += 8));
-    offset += size;
+    final size = binaryCodec.decodeInt(clustersView.read(offset, 8));
+    offset += size + 8;
 
-    if (currentCluster.begin + currentCluster.offset == offset) {
-      return false;
-    }
-
-    return true;
+    return clustersView.size != offset;
   }
 }

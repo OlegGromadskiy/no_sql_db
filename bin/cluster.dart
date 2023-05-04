@@ -82,7 +82,7 @@ class Cluster<T> {
   Cluster({
     required this.begin,
     required RandomAccessFile file,
-    this.size = 1,
+    this.size = 1024,
   }) : _file = file;
 
   void reset() {
@@ -106,13 +106,14 @@ class Cluster<T> {
     return _file.readSync(to - from);
   }
 
-  int readByteFromTo(int from, int to) {
+  int readByteFrom(int from) {
     _file.setPositionSync(from);
 
-    return _file.readSync(1).first;
+    final result = _file.readSync(1);
+    return result.first;
   }
 
-  bool tryReadByteFromTo(int from, int to) {
+  bool tryReadByteFrom(int from) {
     _file.setPositionSync(from);
 
     final result = _file.readSync(1);
